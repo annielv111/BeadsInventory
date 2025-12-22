@@ -97,6 +97,9 @@
 <body>
 
 <div class="container">
+    <div style="text-align:center; padding:8px; color:#999; font-size:12px;">
+        开发者: 小红书用户āōē，ID 11535779483，使用AI工具开发
+    </div>
     <div class="header-sticky">
         <div class="top-bar">
             <div class="stats" style="align-items: flex-start; gap: 15px;">
@@ -139,6 +142,9 @@
     </div>
 
     <div id="grid"></div>
+    <div style="text-align:center; padding:10px; color:#999; font-size:10px;">
+        开发者: 小红书用户āōē，ID 11535779483，使用AI工具开发
+    </div>
 </div>
 
 <div class="footer-bar" id="footer" style="display:none;">
@@ -328,7 +334,7 @@
         
         // 记录补货日志
         const now = new Date();
-        const dateStr = (now.getMonth()+1) + '/' + now.getDate();
+        const dateStr = now.getFullYear() + '/' + (now.getMonth()+1) + '/' + now.getDate();
         if(!item.logs) item.logs = [];
         item.logs.push({ d: dateStr, type: 'add', val: addVal });
         if(item.logs.length > 20) item.logs.shift(); // 增加日志保留条数
@@ -529,7 +535,7 @@
     function submitConsume() {
         const inputs = document.querySelectorAll('.consume-input');
         const now = new Date();
-        const dateStr = (now.getMonth()+1) + '/' + now.getDate();
+        const dateStr = now.getFullYear() + '/' + (now.getMonth()+1) + '/' + now.getDate();
         
         inputs.forEach(input => {
             const id = input.getAttribute('data-id');
@@ -673,8 +679,8 @@
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(-20 * Math.PI / 180);
         
-        ctx.font = '12px -apple-system, sans-serif';
-        ctx.fillStyle = 'rgba(150, 150, 150, 0.08)'; // 进一步降低透明度
+        ctx.font = '10px -apple-system, sans-serif';
+        ctx.fillStyle = 'rgba(150, 150, 150, 0.11)'; // 稍微调高透明度
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(text, 0, 0);
