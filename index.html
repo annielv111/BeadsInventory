@@ -100,14 +100,15 @@
                 <div class="stat-item">补货<b id="count-low" style="color:var(--warn)">0</b></div>
             </div>
             <div style="display:flex; flex-direction:column; gap:5px; align-items: flex-end;">
-                <button class="btn-text" onclick="exportData()">💾 备份数据</button>
-                <button class="btn-text" onclick="importData()">🔄 恢复数据</button>
+                <button class="btn-text" onclick="openDataModal('backup')">💾 数据管理</button>
+                <button class="btn-text" onclick="showModal('helpModal')" style="font-size:12px; color:#999;">� 使用说明</button>
             </div>
         </div>
 
         <div class="config-zone">
             阈值: <input type="number" id="threshold" value="5" onchange="updateThreshold()">g
             <button id="sortBtn" class="btn-sort" onclick="toggleSort()">📊 按消耗量排序</button>
+            <button class="btn-sort" onclick="openBatchInput()">📝 批量初始录入</button>
             <button class="btn-text" onclick="copyLowList()" style="margin-left:auto">复制补货单</button>
         </div>
 
@@ -145,6 +146,74 @@
     </div>
 </div>
 
+<div id="restockModal" class="modal">
+    <h3>新增补货</h3>
+    <div class="modal-desc" id="restockTitle"></div>
+    <div class="input-group">
+        <input type="number" id="restockInput" placeholder="0" step="0.01">
+        <span class="input-suffix">g</span>
+    </div>
+    <div class="modal-btn-group">
+        <button class="m-btn m-btn-primary" onclick="submitRestock()">确认补货</button>
+        <button class="m-btn m-btn-ghost" onclick="showModal('editWeightModal')">返回</button>
+    </div>
+</div>
+
+<div id="historyModal" class="modal">
+    <h3>消耗记录详情</h3>
+    <div class="modal-desc" id="historyTitle"></div>
+    <div id="historyList" style="background:#f9f9f9; border-radius:12px; padding:10px; max-height:300px; overflow-y:auto; font-size:13px; margin-bottom:15px;"></div>
+    <div class="modal-btn-group">
+        <button class="m-btn m-btn-ghost" onclick="closeAllModals()">关闭</button>
+    </div>
+</div>
+
+<div id="helpModal" class="modal">
+    <h3>使用说明</h3>
+    <div style="text-align:left; color:#555; line-height:1.6; font-size:14px; max-height:400px; overflow-y:auto; padding:0 5px;">
+        <p style="margin-bottom:10px;"><b>1. 消耗录入：</b><br>点击色号选中（可多选） -> 点击底部“录入粒数” -> 输入消耗粒数 -> 自动扣除对应重量。</p>
+        <p style="margin-bottom:10px;"><b>2. 补货/修改库存：</b><br>直接点击列表中的“库存重量”数字 -> 输入最新重量 -> 确认。<br>
+        <span style="color:#888; font-size:12px;">(系统会自动根据重量变化记录为“补货”或“消耗”)</span></p>
+        <p style="margin-bottom:10px;"><b>3. 历史记录：</b><br>点击列表中的“累计消耗” -> 查看详细记录。<br>支持删除某条记录，删除后库存会自动回滚。</p>
+        <p style="margin-bottom:10px;"><b>4. 数据备份：</b><br>点击“数据管理” -> 复制备份代码保存。换设备时使用“恢复导入”。</p>
+        <p style="margin-bottom:10px;"><b>5. 阈值与补货单：</b><br>设置“阈值”（例如 5g），库存低于此值的色号会变红预警。<br>点击“复制补货单”可一键复制所有低库存色号及缺货量，方便采购。</p>
+    </div>
+    <div class="modal-btn-group">
+        <button class="m-btn m-btn-primary" onclick="closeAllModals()">知道了</button>
+    </div>
+</div>
+
+<div id="dataModal" class="modal">
+    <h3>数据管理</h3>
+    <div style="display:flex; gap:10px; margin-bottom:15px; background:#f3f4f6; padding:4px; border-radius:12px;">
+        <button id="tabBackup" class="m-btn m-btn-ghost" style="flex:1; padding:8px; font-size:13px;" onclick="switchDataTab('backup')">备份导出</button>
+        <button id="tabRestore" class="m-btn m-btn-ghost" style="flex:1; padding:8px; font-size:13px;" onclick="switchDataTab('restore')">恢复导入</button>
+    </div>
+    
+    <div id="viewBackup">
+        <div class="modal-desc">复制下方代码保存到备忘录</div>
+        <textarea id="backupOutput" style="width:100%; height:100px; padding:10px; border:1px solid #eee; border-radius:12px; resize:none; font-family:monospace; font-size:12px; box-sizing:border-box; background:#f9f9f9; color:#666;" readonly onclick="this.select()"></textarea>
+        <button class="m-btn m-btn-primary" style="margin-top:15px;" onclick="copyBackup()">复制到剪贴板</button>
+    </div>
+
+    <div id="viewRestore" style="display:none;">
+        <div class="modal-desc">将备份代码粘贴到下方</div>
+        <textarea id="restoreInput" style="width:100%; height:100px; padding:10px; border:1px solid #eee; border-radius:12px; resize:none; font-family:monospace; font-size:12px; box-sizing:border-box;" placeholder="粘贴备份代码..."></textarea>
+        <button class="m-btn m-btn-primary" style="margin-top:15px; background:var(--warn);" onclick="execRestore()">确认覆盖恢复</button>
+    </div>
+    <button class="m-btn m-btn-ghost" style="margin-top:10px;" onclick="closeAllModals()">关闭</button>
+</div>
+
+<div id="batchInputModal" class="modal">
+    <h3>初始数据批量录入</h3>
+    <div class="modal-desc">格式：色号+重量 (如 A1 50 B2 100)</div>
+    <textarea id="batchInputText" style="width:100%; height:150px; padding:15px; border:1px solid #eee; border-radius:12px; resize:none; font-family:monospace; font-size:14px; box-sizing:border-box; background:#f9f9f9;" placeholder="支持多种格式，例如：&#10;A1 50&#10;B2: 20.5&#10;C3=100"></textarea>
+    <div class="modal-btn-group" style="margin-top:20px;">
+        <button class="m-btn m-btn-primary" onclick="submitBatchInput()">开始识别并导入</button>
+        <button class="m-btn m-btn-ghost" onclick="closeAllModals()">取消</button>
+    </div>
+</div>
+
 <script>
     const MARD_DB = [
         {id:'A1',hex:'#faf5cd'},{id:'A2',hex:'#fcfed6'},{id:'A3',hex:'#fcff92'},{id:'A4',hex:'#f7ec5c'},{id:'A5',hex:'#f0d83a'},{id:'A6',hex:'#fda951'},{id:'A7',hex:'#fa8c4f'},{id:'A8',hex:'#fbda4d'},{id:'A9',hex:'#f79d5f'},{id:'A10',hex:'#f47e38'},{id:'A11',hex:'#fedb99'},{id:'A12',hex:'#fda276'},{id:'A13',hex:'#fec667'},{id:'A14',hex:'#f75842'},{id:'A15',hex:'#fbf65e'},{id:'A16',hex:'#feff97'},{id:'A17',hex:'#fde173'},{id:'A18',hex:'#fcbf80'},{id:'A19',hex:'#fd7e77'},{id:'A20',hex:'#f9d66e'},{id:'A21',hex:'#fae393'},{id:'A22',hex:'#edf878'},{id:'A23',hex:'#e4c8ba'},{id:'A24',hex:'#f3f6a9'},{id:'A25',hex:'#ffd785'},{id:'A26',hex:'#ffc734'},
@@ -160,6 +229,7 @@
 
     let data = JSON.parse(localStorage.getItem('bead_v_sort')) || MARD_DB.map(i => ({...i, w: 0, totalUsed: 0, logs: []}));
     let threshold = parseFloat(localStorage.getItem('bead_threshold')) || 5;
+    document.getElementById('threshold').value = threshold; // 修复阈值回显
     let sortByUsage = false; // 排序模式状态
     let sel = new Set();
     let currentEditId = null;
@@ -181,7 +251,7 @@
 
         displayData.forEach(item => {
             if (item.id.includes(q)) {
-                const isLow = item.w < threshold && item.w > 0;
+                const isLow = item.w < threshold;
                 if(isLow) lowCount++;
                 
                 const row = document.createElement('div');
@@ -194,7 +264,7 @@
                     <div class="col-id">${item.id}</div>
                     <div class="col-weight">
                         <span class="weight-badge ${isLow ? 'low' : ''}" onclick="event.stopPropagation(); manualEdit('${item.id}')">${item.w}g</span>
-                        <span class="info-tag">累计消耗: <span class="total-use">${(item.totalUsed||0).toFixed(2)}g</span></span>
+                        <span class="info-tag" onclick="event.stopPropagation(); openHistory('${item.id}')">累计消耗: <span class="total-use" style="text-decoration:underline; cursor:pointer;">${(item.totalUsed||0).toFixed(2)}g</span></span>
                     </div>
                     <div class="col-action">
                         <button class="btn-plus" onclick="event.stopPropagation(); quickAdd('${item.id}')">+10g</button>
@@ -230,7 +300,16 @@
 
     function quickAdd(id) {
         const item = data.find(d => d.id === id);
-        item.w = parseFloat((item.w + 10).toFixed(2));
+        const addVal = 10;
+        item.w = parseFloat((item.w + addVal).toFixed(2));
+        
+        // 记录补货日志
+        const now = new Date();
+        const dateStr = (now.getMonth()+1) + '/' + now.getDate();
+        if(!item.logs) item.logs = [];
+        item.logs.push({ d: dateStr, type: 'add', val: addVal });
+        if(item.logs.length > 20) item.logs.shift(); // 增加日志保留条数
+        
         render();
     }
 
@@ -249,6 +328,119 @@
         }
     }
 
+    function openRestockModal() {
+        if(!currentEditId) return;
+        document.getElementById('restockTitle').innerText = `正在为色号 [${currentEditId}] 补货`;
+        document.getElementById('restockInput').value = '';
+        showModal('restockModal');
+        setTimeout(() => document.getElementById('restockInput').focus(), 50);
+        
+        document.getElementById('restockInput').onkeydown = function(e) {
+            if(e.key === 'Enter') submitRestock();
+        }
+    }
+
+    function submitRestock() {
+        const val = parseFloat(document.getElementById('restockInput').value);
+        if(!currentEditId || isNaN(val) || val <= 0) {
+            alert("请输入有效的补货重量");
+            return;
+        }
+        
+        const item = data.find(d => d.id === currentEditId);
+        item.w = parseFloat((item.w + val).toFixed(2));
+        
+        // 记录日志
+        const now = new Date();
+        const dateStr = (now.getMonth()+1) + '/' + now.getDate();
+        if(!item.logs) item.logs = [];
+        item.logs.push({ d: dateStr, type: 'add', val: val });
+        if(item.logs.length > 20) item.logs.shift();
+        
+        save();
+        render();
+        closeAllModals();
+        alert(`已成功补货 ${val}g`);
+    }
+
+    function openHistory(id) {
+        const item = data.find(d => d.id === id);
+        document.getElementById('historyTitle').innerText = `色号 [${id}] 的记录`; // 改标题
+        const list = document.getElementById('historyList');
+        list.innerHTML = '';
+        
+        if (item.logs && item.logs.length > 0) {
+            const logsWithIdx = item.logs.map((log, idx) => ({...log, idx}));
+            logsWithIdx.reverse().forEach(log => {
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #eee; color:#555;';
+                
+                const info = document.createElement('span');
+                if (log.type === 'add') {
+                    // 补货记录样式
+                    const prefix = log.isManual ? '手动调整(补货)' : '补货';
+                    // 手动调整用黑色(#333)，普通补货用蓝色(#1890ff)
+                    const color = log.isManual ? '#333' : '#1890ff';
+                    info.innerHTML = `<span style="color:#999; margin-right:8px;">${log.d}</span> <b style="color:${color}">${prefix} +${log.val}g</b>`;
+                } else {
+                    // 消耗记录样式 (兼容旧数据：没有type字段的视为消耗)
+                    const count = log.c || log.val || 0;
+                    const weight = (count / 100).toFixed(2);
+                    const prefix = log.isManual ? '手动调整(消耗)' : '消耗';
+                    // 手动调整用黑色(#333)，普通消耗用红色(#f5222d)
+                    const color = log.isManual ? '#333' : '#f5222d';
+                    
+                    // 如果是手动调整，优先显示重量，因为粒数是估算的
+                    const desc = log.isManual 
+                        ? `<span style="color:${color}; font-weight:bold;">${prefix} -${weight}g</span> <span style="font-size:11px; color:#999;">(约${count}粒)</span>`
+                        : `<span style="color:${color}; font-weight:bold;">${prefix} ${count} 粒</span> <span style="font-size:11px; color:#999;">(-${weight}g)</span>`;
+                        
+                    info.innerHTML = `<span style="color:#999; margin-right:8px;">${log.d}</span> ${desc}`;
+                }
+                
+                const delBtn = document.createElement('button');
+                delBtn.innerText = '删除';
+                delBtn.style.cssText = 'background:#ff4d4f; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; margin-left:10px;';
+                delBtn.onclick = () => deleteLog(id, log.idx);
+                
+                row.appendChild(info);
+                row.appendChild(delBtn);
+                list.appendChild(row);
+            });
+        } else {
+            list.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">暂无记录</div>';
+        }
+        showModal('historyModal');
+    }
+
+    function deleteLog(id, logIdx) {
+        if(!confirm("确认删除这条记录吗？\n删除后将自动回滚库存变化。")) return;
+        
+        const item = data.find(d => d.id === id);
+        if(!item || !item.logs || !item.logs[logIdx]) return;
+        
+        const log = item.logs[logIdx];
+        
+        if (log.type === 'add') {
+            // 回滚补货：减少库存
+            item.w = Math.max(0, parseFloat((item.w - log.val).toFixed(2)));
+        } else {
+            // 回滚消耗：增加库存，减少累计消耗
+            const count = log.c || log.val || 0;
+            const g = parseFloat((count / 100).toFixed(2));
+            item.w = parseFloat((item.w + g).toFixed(2));
+            item.totalUsed = Math.max(0, parseFloat((item.totalUsed - g).toFixed(2)));
+        }
+        
+        // 删除记录
+        item.logs.splice(logIdx, 1);
+        
+        save();
+        render();
+        // 重新渲染当前打开的历史弹窗
+        openHistory(id);
+    }
+
     function submitEditWeight() {
         if(!currentEditId) return;
         const input = document.getElementById('editWeightInput');
@@ -259,7 +451,33 @@
         
         const item = data.find(d => d.id === currentEditId);
         if(item) {
+            const oldVal = item.w;
+            const diff = finalVal - oldVal;
+            
+            // 更新库存
             item.w = parseFloat(finalVal.toFixed(2));
+            
+            // 自动记录日志 (忽略极小差异)
+            if (Math.abs(diff) > 0.001) {
+                const now = new Date();
+                const dateStr = (now.getMonth()+1) + '/' + now.getDate();
+                if(!item.logs) item.logs = [];
+                
+                if (diff > 0) {
+                    // 增加库存 -> 视为补货
+                    item.logs.push({ d: dateStr, type: 'add', val: parseFloat(diff.toFixed(2)), isManual: true });
+                } else {
+                    // 减少库存 -> 视为消耗
+                    const loss = -diff;
+                    // 更新累计消耗
+                    item.totalUsed = parseFloat(((item.totalUsed || 0) + loss).toFixed(2));
+                    // 记录为消耗 (折算为粒数，假设 1g = 100 粒)
+                    item.logs.push({ d: dateStr, c: Math.round(loss * 100), isManual: true });
+                }
+                
+                if(item.logs.length > 20) item.logs.shift();
+            }
+            
             render();
         }
         
@@ -324,24 +542,100 @@
 
     function save() { localStorage.setItem('bead_v_sort', JSON.stringify(data)); }
 
-    function exportData() {
-        const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-        navigator.clipboard.writeText(b64).then(() => alert("库存与统计已复制！"));
-    }
-
-    function importData() {
-        const code = prompt("粘贴备份代码：");
-        if (code) {
-            try {
-                data = JSON.parse(decodeURIComponent(escape(atob(code))));
-                render();
-                alert("恢复成功！");
-            } catch(e) { alert("恢复失败。"); }
+    // --- 数据管理功能 ---
+    function openDataModal(tab) {
+        showModal('dataModal');
+        switchDataTab(tab);
+        if(tab === 'backup') {
+            // 导出格式：色号 数量 (导出所有库存数据)
+            const text = data.map(d => `${d.id} ${d.w}`)
+                             .join('\n');
+            document.getElementById('backupOutput').value = text || '无数据';
+        } else {
+            document.getElementById('restoreInput').value = '';
         }
     }
 
+    function switchDataTab(tab) {
+        document.getElementById('tabBackup').className = tab==='backup' ? 'm-btn m-btn-primary' : 'm-btn m-btn-ghost';
+        document.getElementById('tabRestore').className = tab==='restore' ? 'm-btn m-btn-primary' : 'm-btn m-btn-ghost';
+        document.getElementById('viewBackup').style.display = tab==='backup' ? 'block' : 'none';
+        document.getElementById('viewRestore').style.display = tab==='restore' ? 'block' : 'none';
+    }
+
+    function copyBackup() {
+        const el = document.getElementById('backupOutput');
+        el.select();
+        navigator.clipboard.writeText(el.value).then(() => alert("已复制到剪贴板"));
+    }
+
+    function execRestore() {
+        const code = document.getElementById('restoreInput').value.trim();
+        if(!code) return;
+        
+        if(!confirm("警告：恢复操作将重置当前所有库存数据，然后导入新数据。\n确认继续吗？")) return;
+
+        // 解析文本格式
+        const regex = /([A-Z][0-9]+)[^0-9\.]*(\d+(\.\d+)?)/gi;
+        let match;
+        const newStock = {};
+        let count = 0;
+
+        while ((match = regex.exec(code)) !== null) {
+            const id = match[1].toUpperCase();
+            const w = parseFloat(match[2]);
+            newStock[id] = w;
+            count++;
+        }
+
+        if (count === 0) {
+            alert("未识别到有效数据，请检查格式 (如: A1 50)");
+            return;
+        }
+
+        // 应用数据：重置所有库存，填入新库存
+        data.forEach(item => {
+            if (newStock[item.id] !== undefined) {
+                item.w = newStock[item.id];
+            } else {
+                item.w = 0; // 备份中不存在的色号，库存归零
+            }
+        });
+
+        save();
+        render();
+        closeAllModals();
+        alert(`已成功恢复 ${count} 条库存记录`);
+    }
+
+    // --- 批量初始录入功能 ---
+    function openBatchInput() {
+        document.getElementById('batchInputText').value = '';
+        showModal('batchInputModal');
+    }
+
+    function submitBatchInput() {
+        const text = document.getElementById('batchInputText').value;
+        const regex = /([A-Z][0-9]+)[^0-9\.]*(\d+(\.\d+)?)/gi;
+        let match;
+        let count = 0;
+        while ((match = regex.exec(text)) !== null) {
+            const id = match[1].toUpperCase();
+            const w = parseFloat(match[2]);
+            const item = data.find(d => d.id === id);
+            if(item) {
+                item.w = w;
+                count++;
+            }
+        }
+        save();
+        render();
+        closeAllModals();
+        alert(`已批量更新 ${count} 个色号的库存`);
+    }
+
     function copyLowList() {
-        const list = data.filter(d => d.w < threshold && d.w > 0).map(d => `${d.id}(${d.w}g)`).join(', ');
+        const list = data.filter(d => d.w < threshold).map(d => `${d.id}(${d.w}g)`).join(', ');
         navigator.clipboard.writeText(list || '充足').then(() => alert("已复制"));
     }
 
