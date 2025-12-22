@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手机模式预览 - MARD 豆库 Pro</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            background: #e5e5e5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: sans-serif;
+            box-sizing: border-box;
+        }
+        
+        .phone-frame {
+            width: 375px;
+            height: 812px; /* iPhone X/11/12/13 size approximation */
+            background: black;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            box-sizing: content-box;
+        }
+
+        /* 模拟刘海/听筒 */
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: black;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            z-index: 10;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .hint {
+            position: fixed;
+            bottom: 20px;
+            color: #666;
+            font-size: 14px;
+            background: rgba(255,255,255,0.8);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-frame">
+        <div class="screen">
+            <iframe src="index.html"></iframe>
+        </div>
+    </div>
+
+    <div class="hint">
+        💡 这是一个模拟器。真实效果请在浏览器按 F12 开启移动端调试，或打包到手机查看。
+    </div>
+
+</body>
+</html>
