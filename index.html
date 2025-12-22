@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -91,13 +91,7 @@
         .modal-row:last-child { border-bottom: none; }
         .modal-input { width: 70px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background: #f9fafb; font-weight: 600; }
         
-        /* Toggle Switch */
-        .toggle-switch { position: relative; display: inline-block; width: 34px; height: 18px; vertical-align: middle; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(16px); }
+
     </style>
 </head>
 <body>
@@ -125,10 +119,10 @@
                     </div>
                 </div>
             </div>
-            <div style="display:flex; flex-direction:column; gap:5px; align-items: flex-end;">
-                <button class="btn-text" onclick="showModal('helpModal')" style="font-size:12px; color:#4a90e2;">� 使用说明</button>
-                <button class="btn-text" onclick="openBatchInput()" style="font-size:12px; color:#4a90e2;">� 初始录入</button>
-                <button class="btn-text" onclick="openDataModal('backup')" style="font-size:12px; color:#4a90e2;">� 数据管理</button>
+                        <div style="display:flex; flex-direction:column; gap:5px; align-items: flex-end;">
+                <button class="btn-text" onclick="openBatchInput()" style="font-size:12px; color:#4a90e2;">📊 初始录入</button>
+                <button class="btn-text" onclick="showModal('helpModal')" style="font-size:12px; color:#4a90e2;">📖 使用说明</button>
+                <button class="btn-text" onclick="openDataModal('backup')" style="font-size:12px; color:#4a90e2;">⚙️ 数据管理</button>
             </div>
         </div>
 
@@ -136,9 +130,9 @@
         
         <div style="display:flex; align-items:center; padding:0px 0px; font-size:12px; color:#999; margin-top:5px;">
             <div style="width:5px;"></div>
-            <div style="flex:1;">
-                 <span style="margin-right:5px;">排序方式</span>
-                 <button id="sortLink" class="btn-text" onclick="toggleSortLink()" style="font-size:12px; color:#4a90e2; text-decoration:none;">按色号</button>
+            <div style="flex:1; display:flex; align-items:center;">
+                 <span style="margin-right:5px;">当前排序方式：</span>
+                 <button id="sortBtn" class="btn-text" onclick="toggleSortLink()" style="font-size:12px; color:#4a90e2;">按色号排序</button>
             </div>
             <div style="width:60px;"></div>
         </div>
@@ -201,7 +195,7 @@
     <h3>使用说明</h3>
     <div style="text-align:left; color:#555; line-height:1.6; font-size:14px; max-height:400px; overflow-y:auto; padding:0 5px;">
         <p style="margin-bottom:10px;"><b>1. 初始录入：</b><br>点击“初始录入”，可一次性粘贴多行数据（格式：色号 数量），快速初始化库存。</p>
-        <p style="margin-bottom:10px;"><b>2. 消耗录入：</b><br>点击色号选中（可多选） -> 点击底部“录入粒数” -> 输入消耗粒数 -> 自动扣除对应重量。</p>
+        <p style="margin-bottom:10px;"><b>2. 消耗录入：</b><br>点击色号选中（可多选） -> 点击底部“录入粒数” -> 输入消耗粒数 -> 自动扣除对应重量。<br><span style="color:#888; font-size:12px;">(按1g=100粒计算)</span></p>
         <p style="margin-bottom:10px;"><b>3. 补货/修改库存：</b><br>直接点击列表中的“库存重量”数字 -> 输入最新重量 -> 确认。<br>也可点击“+10g”按钮快速补货。<br>
         <span style="color:#888; font-size:12px;">(系统会自动根据重量变化记录为“补货”或“消耗”)</span></p>
         <p style="margin-bottom:10px;"><b>4. 历史记录：</b><br>点击列表中的“累计消耗” -> 查看详细记录。<br>支持删除某条记录，删除后库存会自动回滚。</p>
@@ -309,9 +303,8 @@
     }
 
     function toggleSortLink() {
-        const checkbox = document.getElementById('sortToggle');
-        sortByUsage = checkbox.checked;
-        document.getElementById('sortLabel').innerText = sortByUsage ? "按消耗量排序" : "按色号排序";
+        sortByUsage = !sortByUsage;
+        document.getElementById('sortBtn').innerText = sortByUsage ? "按消耗量排序" : "按色号排序";
         render();
     }
 
