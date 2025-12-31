@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MARD 豆库 - 补货消耗版</title>
+    <title>MARD 豆库 - 专业发布版</title>
     <style>
         :root { --primary: #4a90e2; --warn: #ff4d4f; --bg: #f0f2f5; --success: #52c41a; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; font-size: 14px; }
@@ -15,10 +15,13 @@
         .stat-item { text-align: center; }
         .stat-item b { display: block; font-size: 18px; color: var(--primary); }
 
+        /* 备份恢复按钮 */
+        .backup-zone { display: flex; gap: 10px; margin-bottom: 10px; }
+        .btn-text { font-size: 12px; color: #666; cursor: pointer; text-decoration: underline; background:none; border:none; padding:0; }
+
         /* 搜索框 */
         .search-bar { display: flex; gap: 10px; }
         #search { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
-        #search:focus { border-color: var(--primary); }
         
         /* 列表渲染 */
         .bead-row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f0f0f0; }
@@ -30,7 +33,6 @@
         .col-weight { flex: 1; display: flex; align-items: center; }
         .weight-badge { padding: 5px 10px; border-radius: 6px; background: #f0f0f0; font-weight: bold; font-family: monospace; cursor: pointer; }
         .weight-badge.low { background: var(--warn); color: white; }
-        
         .col-action { width: 70px; text-align: right; }
         .btn-plus { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
 
@@ -49,13 +51,17 @@
 
 <div class="container">
     <div class="header-sticky">
+        <div class="backup-zone">
+            <button class="btn-text" onclick="exportData()">💾 备份库存(导出)</button>
+            <button class="btn-text" onclick="importData()">🔄 恢复库存(导入)</button>
+        </div>
         <div class="stats">
             <div class="stat-item">总色号<b>221</b></div>
             <div class="stat-item">低于5g提醒<b id="count-low" style="color:var(--warn)">0</b></div>
-            <button onclick="copyLowList()" style="border:none; background:none; color:var(--primary); text-decoration:underline;">复制清单</button>
+            <button onclick="copyLowList()" style="border:none; background:none; color:var(--primary); text-decoration:underline;">复制缺货单</button>
         </div>
         <div class="search-bar">
-            <input type="text" id="search" placeholder="输入色号搜索 (如 A1, B12)..." oninput="render()">
+            <input type="text" id="search" placeholder="搜索色号 (A1, B12)..." oninput="render()">
         </div>
     </div>
 
@@ -63,8 +69,8 @@
 </div>
 
 <div class="footer-bar" id="footer" style="display:none;">
-    <div>已选 <span id="selNum" style="color:#ffec3d; font-weight:bold;">0</span> 个颜色</div>
-    <button class="btn-go" onclick="openConsumeModal()">填写粒数并消耗</button>
+    <div>已选 <span id="selNum" style="color:#ffec3d; font-weight:bold;">0</span> 色</div>
+    <button class="btn-go" onclick="openConsumeModal()">填写粒数并扣除</button>
 </div>
 
 <div class="overlay" id="mask" onclick="closeModal()"></div>
@@ -88,7 +94,7 @@
         {id:'M1',hex:'#bbc6b6'},{id:'M2',hex:'#909994'},{id:'M3',hex:'#697e81'},{id:'M4',hex:'#e0d4bc'},{id:'M5',hex:'#d1ccaf'},{id:'M6',hex:'#b0aa86'},{id:'M7',hex:'#b0a796'},{id:'M8',hex:'#ae8082'},{id:'M9',hex:'#a68862'},{id:'M10',hex:'#c4b3bb'},{id:'M11',hex:'#9d7693'},{id:'M12',hex:'#644b51'},{id:'M13',hex:'#c79266'},{id:'M14',hex:'#c27563'},{id:'M15',hex:'#747d7a'}
     ];
 
-    let data = JSON.parse(localStorage.getItem('mard_final_v1')) || MARD_DB.map(i => ({...i, w: 0, t: 5}));
+    let data = JSON.parse(localStorage.getItem('bead_stock_pro')) || MARD_DB.map(i => ({...i, w: 0, t: 5}));
     let sel = new Set();
 
     function render() {
@@ -119,7 +125,7 @@
             }
         });
         document.getElementById('count-low').innerText = lowCount;
-        localStorage.setItem('mard_final_v1', JSON.stringify(data));
+        localStorage.setItem('bead_stock_pro', JSON.stringify(data));
     }
 
     function toggleSelect(id) {
@@ -138,7 +144,7 @@
 
     function manualEdit(id) {
         const item = data.find(d => d.id === id);
-        const val = prompt(`【${id}】修改当前重量(g):`, item.w);
+        const val = prompt(`【${id}】直接设置重量(g):`, item.w);
         if (val !== null) { item.w = parseFloat(val) || 0; render(); }
     }
 
@@ -174,7 +180,6 @@
         sel.clear();
         document.getElementById('footer').style.display = 'none';
         render();
-        alert("消耗已同步！");
     }
 
     function closeModal() {
@@ -184,8 +189,36 @@
 
     function copyLowList() {
         const list = data.filter(d => d.w < d.t && d.w > 0).map(d => `${d.id}(${d.w}g)`).join(', ');
-        if(!list) return alert("暂无缺货颜色");
-        navigator.clipboard.writeText(list).then(() => alert("补货清单已复制到剪贴板"));
+        if(!list) return alert("库存充足！");
+        navigator.clipboard.writeText(list).then(() => alert("补货清单已复制"));
+    }
+
+    // --- 数据备份与恢复 ---
+    function exportData() {
+        const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+        const dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = b64;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+        alert("【备份成功】\n库存代码已复制到剪贴板，请粘贴并保存到你的手机备忘录或微信中。下次如需找回，点击'恢复'即可。");
+    }
+
+    function importData() {
+        const code = prompt("请粘贴之前备份的库存代码：");
+        if (code) {
+            try {
+                const decoded = JSON.parse(decodeURIComponent(escape(atob(code))));
+                if(Array.isArray(decoded)) {
+                    data = decoded;
+                    render();
+                    alert("【恢复成功】库存已更新！");
+                }
+            } catch(e) {
+                alert("无效的代码，恢复失败。");
+            }
+        }
     }
 
     render();
