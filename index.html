@@ -639,7 +639,7 @@
             <img id="downloadImg" style="max-width:100%; height:auto;" />
         </div>
         <div style="margin-top:15px; display:flex; justify-content:center; gap:10px;">
-             <a id="downloadBtnMobile" href="#" target="_blank" style="padding:8px 20px; background:#52c41a; color:white; text-decoration:none; border-radius:6px; font-size:14px; display:flex; align-items:center; justify-content:center;">保存图片</a>
+             <button id="downloadBtnMobile" style="padding:8px 20px; background:#52c41a; color:white; border:none; border-radius:6px; font-size:14px; display:flex; align-items:center; justify-content:center; cursor:pointer;">保存图片</button>
              <button onclick="closeDownloadModal()" style="padding:8px 20px; background:#1890ff; color:white; border:none; border-radius:6px; cursor:pointer;">关闭</button>
         </div>
     </div>
@@ -2268,8 +2268,38 @@
                 if (modal && img) {
                     img.src = url;
                     if (btn) {
-                        btn.href = url;
-                        btn.download = `layout_solution_${idx+1}.jpg`;
+                        // Remove old event listeners
+                        const newBtn = btn.cloneNode(true);
+                        btn.parentNode.replaceChild(newBtn, btn);
+                        
+                        newBtn.onclick = async function() {
+                            const fileName = `layout_solution_${idx+1}.jpg`;
+                            
+                            // Try Web Share API Level 2 (File Share)
+                            if (navigator.canShare && navigator.canShare({ files: [new File([blob], fileName, {type: 'image/jpeg'})] })) {
+                                try {
+                                    await navigator.share({
+                                        files: [new File([blob], fileName, {type: 'image/jpeg'})],
+                                        title: '方案图片',
+                                        text: '这是您的布局方案图片'
+                                    });
+                                    return;
+                                } catch (error) {
+                                    console.log('Share failed', error);
+                                }
+                            }
+                            
+                            // Fallback 1: Direct Download (Standard)
+                            const link = document.createElement('a');
+                            link.download = fileName;
+                            link.href = url;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            // Fallback 2: Open in new window (for some WebViews)
+                            // setTimeout(() => window.open(url, '_blank'), 500);
+                        };
                     }
                     modal.style.display = 'flex';
                 }
