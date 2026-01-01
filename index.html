@@ -2245,6 +2245,36 @@
                 currentY += LINE_HEIGHT;
             });
             
+            // --- ROBUST AUTO DOWNLOAD STRATEGY ---
+            
+            // 0. HTML5+ Environment (HBuilderX / 5+App / uni-app)
+            // This is the BEST way for APKs built with HBuilderX
+            if (window.plus && window.plus.gallery) {
+                try {
+                    var bitmap = new plus.nativeObj.Bitmap("test");
+                    bitmap.loadBase64Data(canvas.toDataURL('image/jpeg', 0.9), function() {
+                        const fileName = "_doc/solution_" + (new Date()).getTime() + ".jpg";
+                        bitmap.save(fileName, {overwrite: true}, function(i) {
+                            plus.gallery.save(i.target, function() {
+                                alert("已成功保存到手机相册！");
+                                bitmap.clear();
+                            }, function(e) {
+                                alert("保存到相册失败: " + JSON.stringify(e));
+                                bitmap.clear();
+                            });
+                        }, function(e) {
+                            alert("保存文件失败: " + JSON.stringify(e));
+                            bitmap.clear();
+                        });
+                    }, function(e) {
+                        alert("图片处理失败: " + JSON.stringify(e));
+                    });
+                    return; // Stop execution, let the native API handle it
+                } catch(e) {
+                    console.error("Plus API failed", e);
+                }
+            }
+
             // --- DIRECT DOWNLOAD STRATEGY (User Requested) ---
             // Bypass Share API and force direct download to local storage
             
