@@ -639,7 +639,8 @@
         <div style="overflow:auto; flex:1; display:flex; justify-content:center; align-items:center; background:#f9f9f9; border-radius:8px; border:1px solid #eee; padding:5px;">
             <img id="downloadImg" style="max-width:100%; height:auto;" />
         </div>
-        <div style="margin-top:15px; display:flex; justify-content:center;">
+        <div style="margin-top:15px; display:flex; justify-content:center; gap:10px;">
+             <a id="downloadBtnMobile" href="#" target="_blank" style="padding:8px 20px; background:#52c41a; color:white; text-decoration:none; border-radius:6px; font-size:14px; display:flex; align-items:center; justify-content:center;">保存图片</a>
              <button onclick="closeDownloadModal()" style="padding:8px 20px; background:#1890ff; color:white; border:none; border-radius:6px; cursor:pointer;">关闭</button>
         </div>
     </div>
@@ -2071,7 +2072,13 @@
     }
 
     function closeDownloadModal() {
-        document.getElementById('downloadModal').style.display = 'none';
+        const modal = document.getElementById('downloadModal');
+        const img = document.getElementById('downloadImg');
+        if (img && img.src && img.src.startsWith('blob:')) {
+            URL.revokeObjectURL(img.src);
+            img.src = '';
+        }
+        modal.style.display = 'none';
     }
 
     function downloadSolution(idx) {
@@ -2253,20 +2260,28 @@
         const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window);
 
         if (isMobile) {
-            const dataUrl = canvas.toDataURL('image/png');
-            const modal = document.getElementById('downloadModal');
-            const img = document.getElementById('downloadImg');
-            if (modal && img) {
-                img.src = dataUrl;
-                modal.style.display = 'flex';
-            }
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const modal = document.getElementById('downloadModal');
+                const img = document.getElementById('downloadImg');
+                const btn = document.getElementById('downloadBtnMobile');
+                
+                if (modal && img) {
+                    img.src = url;
+                    if (btn) {
+                        btn.href = url;
+                        btn.download = `layout_solution_${idx+1}.jpg`;
+                    }
+                    modal.style.display = 'flex';
+                }
+            }, 'image/jpeg', 0.9);
         } else {
-            const link = document.createElement('a');
-            link.download = `layout_solution_${idx+1}.png`;
-            link.href = canvas.toDataURL('image/png');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+             const link = document.createElement('a');
+             link.download = `layout_solution_${idx+1}.jpg`;
+             link.href = canvas.toDataURL('image/jpeg', 0.9);
+             document.body.appendChild(link);
+             link.click();
+             document.body.removeChild(link);
         }
     }
 
