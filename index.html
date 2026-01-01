@@ -26,7 +26,7 @@
         .btn-text { font-size: 12px; color: var(--primary); cursor: pointer; background:none; border:none; padding:0; text-decoration: underline; }
 
         /* 搜索框 */
-        #search { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 5px; }
+        #search { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; outline: none; margin-bottom: 5px; }
         
         /* 列表渲染 */
         .bead-row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f0f0f0; }
@@ -40,6 +40,8 @@
         .weight-badge.low { background: var(--warn); color: white; }
         .col-action { width: 60px; text-align: right; }
         .btn-plus { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; padding: 5px 8px; border-radius: 6px; font-size: 11px; cursor: pointer; }
+        .btn-detail { background: #fff; border: 1px solid #d9d9d9; color: #666; padding: 5px 10px; border-radius: 12px; font-size: 11px; cursor: pointer; margin-left: 5px; transition: all 0.2s; }
+        .btn-detail:hover { color: var(--primary); border-color: var(--primary); }
 
         .info-tag { font-size: 10px; color: #999; display: block; margin-top: 3px; }
         .total-use { color: #8c8c8c; font-weight: bold; }
@@ -92,6 +94,33 @@
         .modal-input { width: 70px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background: #f9fafb; font-weight: 600; }
         
 
+        /* 移动端适配优化 */
+        @media (max-width: 480px) {
+            .container { padding-bottom: 80px; }
+            .bead-row { padding: 8px 5px; }
+            
+            .col-select { width: 18px; }
+            .col-color { width: 26px; padding-left: 6px; box-sizing: content-box; }
+            .swatch { width: 20px; height: 20px; }
+            .col-id { width: 38px; font-size: 12px; }
+            .col-action { width: 42px; }
+            
+            .weight-badge { font-size: 12px; padding: 2px 6px; }
+            .btn-plus { padding: 4px 4px; font-size: 10px; }
+            /* 恢复左对齐缩放，并给一个固定的左边距，预留出大概1000g数字的空间 */
+            .btn-detail { padding: 0 4px; height: 18px; line-height: 16px; font-size: 12px; border-radius: 4px; margin-left: 2px; transform: scale(0.85); transform-origin: left center; white-space: nowrap; }
+            
+            /* 在小屏幕上减小间距 */
+            .weight-primary-row { gap: 6px !important; }
+            .weight-detail-row { gap: 4px !important; }
+            .grain-info { display: none !important; } /* 极小屏幕隐藏粒数估算，或缩小 */
+        }
+        
+        /* 中等屏幕显示粒数 */
+        @media (min-width: 360px) and (max-width: 480px) {
+            .grain-info { display: inline !important; font-size: 9px !important; }
+        }
+
     </style>
 </head>
 <body>
@@ -105,27 +134,28 @@
             <div class="stats" style="align-items: flex-start; gap: 15px;">
                 <div style="display:flex; flex-direction:column;">
                     <span style="font-size:12px; color:#999; margin-bottom:2px;">色号</span>
-                    <b style="font-size:18px; color:#333; line-height:1.2;">Mard 221</b>
+                    <b style="font-size:14px; color:#333; line-height:1.2;">Mard 221</b>
                 </div>
                 <div style="display:flex; flex-direction:column;">
                     <span style="font-size:12px; color:#999; margin-bottom:2px;">补货</span>
                     <div style="display:flex; align-items:baseline; gap:5px;">
-                        <b id="count-low" style="font-size:18px; color:var(--warn); line-height:1.2;">0</b>
-                        <button class="btn-text" onclick="copyLowList()" style="font-size:12px; padding:0; text-decoration:underline;">复制补货单</button>
+                        <b id="count-low" style="font-size:14px; color:var(--warn); line-height:1.2;">0</b>
+                        <button class="btn-text" onclick="openLowStockModal()" style="font-size:12px; padding:0; text-decoration:underline; white-space:nowrap;">补货单</button>
                     </div>
                 </div>
                 <div style="display:flex; flex-direction:column;">
                     <span style="font-size:12px; color:#999; margin-bottom:2px;">阈值</span>
                     <div style="display:flex; align-items:baseline; gap:2px;">
-                        <input type="number" id="threshold" value="5" onchange="updateThreshold()" style="width:35px; border:none; border-bottom:1px solid #999; text-align:center; color:#333; font-size:16px; font-weight:bold; padding:0; background:transparent;">
+                        <input type="number" id="threshold" value="5" onchange="updateThreshold()" style="width:35px; border:none; border-bottom:1px solid #999; text-align:center; color:#333; font-size:14px; font-weight:bold; padding:0; background:transparent;">
                         <span style="font-size:12px; color:#333;">g</span>
                     </div>
                 </div>
             </div>
                         <div style="display:flex; flex-direction:column; gap:5px; align-items: flex-end;">
-                <button class="btn-text" onclick="openBatchInput()" style="font-size:12px; color:#4a90e2;">📊 初始录入</button>
                 <button class="btn-text" onclick="showModal('helpModal')" style="font-size:12px; color:#4a90e2;">📖 使用说明</button>
+                <button class="btn-text" onclick="openBatchInput()" style="font-size:12px; color:#4a90e2;">📊 初始录入</button>
                 <button class="btn-text" onclick="openDataModal('backup')" style="font-size:12px; color:#4a90e2;">⚙️ 数据管理</button>
+                <button class="btn-text" onclick="showDevInfo()" style="font-size:12px; color:#4a90e2;">🧑 作者账号</button>
             </div>
         </div>
 
@@ -134,8 +164,16 @@
         <div style="display:flex; align-items:center; padding:0px 0px; font-size:12px; color:#999; margin-top:5px;">
             <div style="width:5px;"></div>
             <div style="flex:1; display:flex; align-items:center;">
-                 <span style="margin-right:5px;">当前排序方式：</span>
-                 <button id="sortBtn" class="btn-text" onclick="toggleSortLink()" style="font-size:12px; color:#4a90e2;">按色号排序</button>
+                 <span style="margin-right:5px;">排序：</span>
+                 <select id="sortSelect" onchange="changeSortMode()" style="font-size:12px; color:#333; border:1px solid #eee; background:transparent; outline:none; padding:2px; border-radius:4px; cursor:pointer;">
+                    <option value="id">按色号排序</option>
+                    <option value="stock_desc">库存由多到少</option>
+                    <option value="stock_asc">库存由少到多</option>
+                    <option value="usage_desc">消耗量由多到少</option>
+                    <option value="usage_asc">消耗量由少到多</option>
+                    <option value="restock_desc">补货量由多到少</option>
+                    <option value="restock_asc">补货量由少到多</option>
+                 </select>
             </div>
             <div style="width:60px;"></div>
         </div>
@@ -147,31 +185,38 @@
     </div>
 </div>
 
-<div class="footer-bar" id="footer" style="display:none;">
-    <div>已选 <span id="selNum" style="color:#ffec3d; font-weight:bold;">0</span> 色</div>
-    <button class="btn-go" onclick="openConsumeModal()">录入粒数并扣除</button>
-</div>
+    <div id="footer" class="footer-bar" style="display:none;">
+        <div style="font-size:14px; display:flex; align-items:center; gap:10px;">
+            <span>已选 <b id="selNum" style="color:#ffd700; font-size:18px;">0</b> 色</span>
+            <button onclick="cancelSelection()" style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:white; padding:4px 10px; border-radius:15px; font-size:12px; cursor:pointer;">取消</button>
+        </div>
+        <button class="btn-go" onclick="openConsumeModal()">录入粒数</button>
+    </div>
+
+    <!-- 弹窗部分 -->
 
 <div class="overlay" id="mask" onclick="closeAllModals()"></div>
-<div id="consumeModal" class="modal">
-    <h3>消耗录入(粒数)</h3>
-    <div id="modalList" style="max-height:300px; overflow-y:auto; margin-bottom:15px;"></div>
-    <div class="modal-btn-group">
-        <button class="m-btn m-btn-primary" onclick="submitConsume()">确认扣除</button>
-        <button class="m-btn m-btn-ghost" onclick="closeAllModals()">取消</button>
+<div id="consumeModal" class="modal" style="width: 85%; max-width: 340px; padding: 20px;">
+    <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: center; color: #333;">消耗录入 (粒数)</h3>
+    <div id="modalList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #f0f0f0; border-radius: 12px; padding: 5px;"></div>
+    <div class="modal-btn-group" style="gap: 10px;">
+        <button class="m-btn m-btn-primary" onclick="submitConsume()" style="padding: 10px; font-size: 14px; border-radius: 10px;">确认扣除</button>
+        <button class="m-btn m-btn-ghost" onclick="closeAllModals()" style="padding: 10px; font-size: 14px; border-radius: 10px;">取消</button>
     </div>
 </div>
 
-<div id="editWeightModal" class="modal">
-    <h3>修改库存重量</h3>
-    <div class="modal-desc" id="editWeightTitle"></div>
-    <div class="input-group">
-        <input type="number" id="editWeightInput" placeholder="0" step="0.01">
-        <span class="input-suffix">g</span>
+<div id="editWeightModal" class="modal" style="width: 80%; max-width: 300px; padding: 25px; border-radius: 20px;">
+    <h3 id="editWeightModalTitle" style="font-size: 18px; color: #333; margin-bottom: 25px;">修改库存重量</h3>
+    
+    <div class="input-group" style="margin-bottom: 25px;">
+        <input type="number" id="editWeightInput" placeholder="0.00" step="0.01" 
+               style="font-size: 32px; padding: 15px; border-radius: 12px; background: #f7f8fa; border: 2px solid transparent; width: 100%; box-sizing: border-box; text-align: center; color: #333; font-weight: bold; transition: all 0.2s;">
+        <span class="input-suffix" style="right: 30px; font-size: 16px; color: #999;">g</span>
     </div>
-    <div class="modal-btn-group">
-        <button class="m-btn m-btn-primary" onclick="submitEditWeight()">确认修改</button>
-        <button class="m-btn m-btn-ghost" onclick="closeAllModals()">取消</button>
+    
+    <div class="modal-btn-group" style="gap: 12px;">
+        <button class="m-btn m-btn-primary" onclick="submitEditWeight()" style="padding: 12px; font-size: 16px; border-radius: 12px; background: linear-gradient(135deg, #4a90e2, #357abd); box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);">确认修改</button>
+        <button class="m-btn m-btn-ghost" onclick="closeAllModals()" style="padding: 12px; font-size: 15px; border-radius: 12px; color: #666;">取消</button>
     </div>
 </div>
 
@@ -188,12 +233,39 @@
     </div>
 </div>
 
-<div id="historyModal" class="modal">
-    <h3>消耗记录详情</h3>
-    <div class="modal-desc" id="historyTitle"></div>
-    <div id="historyList" style="background:#f9f9f9; border-radius:12px; padding:10px; max-height:300px; overflow-y:auto; font-size:13px; margin-bottom:15px;"></div>
-    <div class="modal-btn-group">
-        <button class="m-btn m-btn-ghost" onclick="closeAllModals()">关闭</button>
+<div id="historyModal" class="modal" style="width:85%; max-width:340px;">
+    <h3 id="historyTitle" style="font-size:16px; font-weight:bold; margin-bottom:12px;">库存明细</h3>
+    
+    <div style="display:flex; justify-content:space-between; margin-bottom:15px; background:#f5f7fa; padding:10px; border-radius:10px;">
+        <div style="text-align:center; flex:1;">
+            <div style="font-size:11px; color:#999; margin-bottom:3px;">当前余量</div>
+            <div id="hist-stock" style="font-size:16px; font-weight:bold; color:#4a90e2;">0g</div>
+        </div>
+        <div style="text-align:center; border-left:1px solid #e0e0e0; border-right:1px solid #e0e0e0; flex:1;">
+            <div style="font-size:11px; color:#999; margin-bottom:3px;">总消耗</div>
+            <div id="hist-used" style="font-size:16px; font-weight:bold; color:#ff4d4f;">0g</div>
+        </div>
+        <div style="text-align:center; flex:1;">
+            <div style="font-size:11px; color:#999; margin-bottom:3px;">总补充</div>
+            <div id="hist-added" style="font-size:16px; font-weight:bold; color:#52c41a;">0g</div>
+        </div>
+    </div>
+
+    <div style="max-height:240px; overflow-y:auto; border:1px solid #eee; border-radius:10px;">
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <thead style="background:#fafafa; position:sticky; top:0;">
+                <tr>
+                    <th style="padding:8px; text-align:left; color:#999; font-weight:normal; border-bottom:1px solid #eee;">时间</th>
+                    <th style="padding:8px; text-align:center; color:#999; font-weight:normal; border-bottom:1px solid #eee;">操作</th>
+                    <th style="padding:8px; text-align:right; color:#999; font-weight:normal; border-bottom:1px solid #eee;">重量/粒数</th>
+                </tr>
+            </thead>
+            <tbody id="historyList"></tbody>
+        </table>
+    </div>
+
+    <div class="modal-btn-group" style="margin-top:15px;">
+        <button class="m-btn m-btn-ghost" onclick="closeAllModals()" style="padding:8px; font-size:13px;">关闭</button>
     </div>
 </div>
 
@@ -206,7 +278,7 @@
         <span style="color:#888; font-size:12px;">(系统会自动根据重量变化记录为“补货”或“消耗”)</span></p>
         <p style="margin-bottom:10px;"><b>4. 历史记录：</b><br>点击列表中的“累计消耗” -> 查看详细记录。<br>支持删除某条记录，删除后库存会自动回滚。</p>
         <p style="margin-bottom:10px;"><b>5. 数据备份：</b><br>点击“数据管理” -> 复制备份代码保存。换设备时使用“恢复导入”。</p>
-        <p style="margin-bottom:10px;"><b>6. 阈值与补货单：</b><br>设置“阈值”（例如 5g），库存低于此值的色号会变红预警。<br>点击“复制补货单”可一键复制所有低库存色号及缺货量，方便采购。</p>
+        <p style="margin-bottom:10px;"><b>6. 阈值与补货单：</b><br>设置“阈值”（例如 5g），库存低于此值的色号会变红预警。<br>点击“查看补货单”可查看所有低库存色号及当前库存，支持一键复制。</p>
         <p style="margin-bottom:10px;"><b>7. 搜索功能：</b><br>在顶部输入框输入色号（支持部分匹配），可快速筛选显示对应颜色的库存。</p>
     </div>
     <div class="modal-btn-group">
@@ -245,6 +317,54 @@
     </div>
 </div>
 
+<div id="lowStockModal" class="modal" style="width:85%; max-width:340px; padding:20px; border-radius:24px;">
+    <h3 style="font-size:18px; font-weight:bold; margin-bottom:20px; text-align:center; color:#333;">补货清单</h3>
+    <div style="margin-bottom:15px; background:#fffbe6; padding:10px; border-radius:8px; border:1px solid #ffe58f; display:flex; align-items:center; gap:8px;">
+        <span style="font-size:16px;">⚠️</span>
+        <div class="modal-desc" style="font-size:12px; color:#d48806; margin:0; text-align:left;">以下色号库存低于设定阈值，建议及时补货。</div>
+    </div>
+    
+    <div id="lowStockList" style="max-height:260px; overflow-y:auto; border:1px solid #f0f0f0; border-radius:12px; margin-bottom:20px; padding:5px;"></div>
+    
+    <!-- 隐藏的文本域用于复制功能 -->
+    <textarea id="lowStockText" style="position:absolute; left:-9999px;"></textarea>
+
+    <div class="modal-btn-group" style="gap:10px;">
+        <button class="m-btn m-btn-primary" style="padding:12px; font-size:15px; border-radius:12px;" onclick="copyLowStockText()">一键复制清单</button>
+        <button class="m-btn m-btn-ghost" style="padding:12px; font-size:15px; border-radius:12px;" onclick="closeAllModals()">关闭</button>
+    </div>
+</div>
+
+<div id="welcomeModal" class="modal">
+    <h3>📢 欢迎使用 MARD 豆库</h3>
+    <div style="text-align:left; color:#555; line-height:1.6; font-size:14px; padding:0 10px;">
+        <p style="margin-bottom:12px;"><b>1. 数据安全提醒：</b><br>
+        本工具数据<span style="color:#ff4d4f; font-weight:bold;">仅存储在您的浏览器缓存中</span>。清理浏览器缓存会导致数据丢失！<br>
+        请务必定期备份数据（功能入口：右上角“数据管理” -> “备份导出”），作者不承担数据丢失的任何后果。</p>
+        
+        <p style="margin-bottom:12px;"><b>2. 设备同步：</b><br>
+        本工具为离线网页应用，<span style="color:#ff4d4f; font-weight:bold;">不支持多设备实时同步</span>。如需在其他设备使用，请使用备份/恢复功能手动迁移数据。</p>
+        
+        <p style="margin-bottom:12px;"><b>3. 功能说明：</b><br>
+        详细操作指南请点击页面右上角的“📖 使用说明”。</p>
+    </div>
+    <div class="modal-btn-group" style="margin-top:20px;">
+        <button class="m-btn m-btn-primary" onclick="closeWelcomeModal()">我已知晓</button>
+    </div>
+</div>
+
+<div id="devInfoModal" class="modal" style="width:70%; max-width:260px; padding:15px;">
+    <h3 style="font-size:16px;">开发者信息</h3>
+    <div style="text-align:center; padding:10px; color:#555; font-size:13px; line-height:1.6;">
+        <p><b>开发者:</b> 小红书用户āōē</p>
+        <p><b>ID:</b> 11535779483</p>
+        <p>使用 AI 工具开发</p>
+    </div>
+    <div class="modal-btn-group">
+        <button class="m-btn m-btn-primary" style="padding:10px; font-size:14px;" onclick="closeAllModals()">关闭</button>
+    </div>
+</div>
+
 <script>
     const MARD_DB = [
         {id:'A1',hex:'#faf5cd'},{id:'A2',hex:'#fcfed6'},{id:'A3',hex:'#fcff92'},{id:'A4',hex:'#f7ec5c'},{id:'A5',hex:'#f0d83a'},{id:'A6',hex:'#fda951'},{id:'A7',hex:'#fa8c4f'},{id:'A8',hex:'#fbda4d'},{id:'A9',hex:'#f79d5f'},{id:'A10',hex:'#f47e38'},{id:'A11',hex:'#fedb99'},{id:'A12',hex:'#fda276'},{id:'A13',hex:'#fec667'},{id:'A14',hex:'#f75842'},{id:'A15',hex:'#fbf65e'},{id:'A16',hex:'#feff97'},{id:'A17',hex:'#fde173'},{id:'A18',hex:'#fcbf80'},{id:'A19',hex:'#fd7e77'},{id:'A20',hex:'#f9d66e'},{id:'A21',hex:'#fae393'},{id:'A22',hex:'#edf878'},{id:'A23',hex:'#e4c8ba'},{id:'A24',hex:'#f3f6a9'},{id:'A25',hex:'#ffd785'},{id:'A26',hex:'#ffc734'},
@@ -261,64 +381,179 @@
     let data = JSON.parse(localStorage.getItem('bead_v_sort')) || MARD_DB.map(i => ({...i, w: 0, totalUsed: 0, logs: []}));
     let threshold = parseFloat(localStorage.getItem('bead_threshold')) || 5;
     document.getElementById('threshold').value = threshold; // 修复阈值回显
-    let sortByUsage = false; // 排序模式状态
+    let currentSortMode = 'id'; // 排序模式状态
     let sel = new Set();
     let currentEditId = null;
+
+    function formatTime(now) {
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        const h = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        return `${y}/${m}/${d} ${h}:${min}:${s}`;
+    }
+
+    let collapsedSeries = new Set();
+
+    function toggleSeries(key) {
+        if(collapsedSeries.has(key)) collapsedSeries.delete(key);
+        else collapsedSeries.add(key);
+        render();
+    }
+
+    function createRow(item) {
+        const isLow = item.w < threshold;
+        const grainCount = Math.round(item.w * 100);
+        
+        // 计算总补货
+        let totalAdded = 0;
+        if (item.totalAdded !== undefined) {
+             totalAdded = item.totalAdded;
+        } else {
+            // 兼容逻辑：从 logs 计算并初始化
+            if(item.logs) {
+                 item.logs.forEach(log => {
+                     if(log.type === 'add') totalAdded += (log.val || 0);
+                 });
+            }
+            totalAdded = parseFloat(totalAdded.toFixed(2));
+            // 初始化字段以便后续累加
+            item.totalAdded = totalAdded; 
+        }
+        
+        const totalUsed = item.totalUsed || 0;
+
+        const row = document.createElement('div');
+        row.className = `bead-row ${sel.has(item.id) ? 'selected' : ''}`;
+        row.onclick = () => toggleSelect(item.id);
+        
+        row.innerHTML = `
+            <div class="col-select"><input type="checkbox" ${sel.has(item.id)?'checked':''}></div>
+            <div class="col-color"><div class="swatch" style="background:${item.hex}"></div></div>
+            <div class="col-id">${item.id}</div>
+            <div class="col-weight" style="display:flex; flex-direction:column; justify-content:center; gap:2px;">
+                <div class="weight-primary-row" style="display:flex; align-items:center; gap:15px;">
+                    <div style="cursor:pointer; display:flex; align-items:baseline;" onclick="event.stopPropagation(); manualEdit('${item.id}')">
+                        <span class="weight-badge ${isLow ? 'low' : ''}">${item.w}g</span>
+                        <span class="grain-info" style="font-size:10px; color:#999; margin-left:4px;">≈${grainCount}粒</span>
+                    </div>
+                </div>
+                <div class="weight-detail-row" style="font-size:10px; color:#999; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                     <span style="white-space:nowrap;">总耗: <b style="color:#ff4d4f; font-weight:normal;">${totalUsed}g</b></span>
+                     <span style="white-space:nowrap;">总补: <b style="color:#52c41a; font-weight:normal;">${totalAdded}g</b></span>
+                     <button class="btn-detail" onclick="event.stopPropagation(); openHistory('${item.id}')">查看明细</button>
+                </div>
+            </div>
+            <div class="col-action">
+                <button class="btn-plus" onclick="event.stopPropagation(); quickAdd('${item.id}')">+10g</button>
+            </div>
+        `;
+        return row;
+    }
 
     function render() {
         const q = document.getElementById('search').value.toUpperCase();
         const grid = document.getElementById('grid');
         grid.innerHTML = '';
-        let lowCount = 0;
-
-        // 排序逻辑
+        
         let displayData = [...data];
-        if (sortByUsage) {
+        
+        // 排序逻辑
+        if (currentSortMode === 'usage_desc') {
             displayData.sort((a, b) => (b.totalUsed || 0) - (a.totalUsed || 0));
+        } else if (currentSortMode === 'usage_asc') {
+            displayData.sort((a, b) => (a.totalUsed || 0) - (b.totalUsed || 0));
+        } else if (currentSortMode === 'stock_desc') {
+            displayData.sort((a, b) => b.w - a.w); // 降序
+        } else if (currentSortMode === 'stock_asc') {
+            displayData.sort((a, b) => a.w - b.w); // 升序
+        } else if (currentSortMode.startsWith('restock')) {
+             displayData.sort((a, b) => {
+                 const getRestock = (item) => {
+                     if(!item.logs) return 0;
+                     return item.logs.reduce((sum, log) => sum + (log.type === 'add' ? (log.val||0) : 0), 0);
+                 };
+                 const valA = getRestock(a);
+                 const valB = getRestock(b);
+                 return currentSortMode === 'restock_desc' ? valB - valA : valA - valB;
+             });
         } else {
             // 默认按ID字母+数字排序
             displayData.sort((a, b) => a.id.localeCompare(b.id, undefined, {numeric: true, sensitivity: 'base'}));
         }
 
+        // 计算低库存数量（基于当前搜索过滤）
+        let lowCount = 0;
         displayData.forEach(item => {
             if (item.id.includes(q)) {
-                const isLow = item.w < threshold;
-                if(isLow) lowCount++;
-                
-                const row = document.createElement('div');
-                row.className = `bead-row ${sel.has(item.id) ? 'selected' : ''}`;
-                row.onclick = () => toggleSelect(item.id);
-                
-                row.innerHTML = `
-                    <div class="col-select"><input type="checkbox" ${sel.has(item.id)?'checked':''}></div>
-                    <div class="col-color"><div class="swatch" style="background:${item.hex}"></div></div>
-                    <div class="col-id">${item.id}</div>
-                    <div class="col-weight">
-                        <span class="weight-badge ${isLow ? 'low' : ''}" onclick="event.stopPropagation(); manualEdit('${item.id}')">${item.w}g</span>
-                        <span class="info-tag" onclick="event.stopPropagation(); openHistory('${item.id}')">累计消耗: <span class="total-use" style="text-decoration:underline; cursor:pointer;">${(item.totalUsed||0).toFixed(2)}g</span></span>
-                    </div>
-                    <div class="col-action">
-                        <button class="btn-plus" onclick="event.stopPropagation(); quickAdd('${item.id}')">+10g</button>
-                    </div>
-                `;
-                grid.appendChild(row);
+                if(item.w < threshold) lowCount++;
             }
         });
         document.getElementById('count-low').innerText = lowCount;
+
+        // 分组显示逻辑（仅在默认排序且无搜索时启用）
+        if (currentSortMode === 'id' && q === '') {
+             const groups = {};
+             displayData.forEach(item => {
+                 let key = item.id.charAt(0).toUpperCase();
+                 if (!/^[A-Z]/.test(key)) key = '#'; // 非字母开头归入#
+                 if(!groups[key]) groups[key] = [];
+                 groups[key].push(item);
+             });
+             
+             Object.keys(groups).sort().forEach(series => {
+                 const items = groups[series];
+                 const isCollapsed = collapsedSeries.has(series);
+                 
+                 const header = document.createElement('div');
+                 header.onclick = () => toggleSeries(series);
+                 header.style.cssText = 'background:#f8f9fa; padding:10px 15px; font-weight:bold; color:#555; border-bottom:1px solid #eee; cursor:pointer; display:flex; justify-content:space-between; align-items:center;';
+                 header.innerHTML = `
+                    <span>${series}系列 (${items.length})</span>
+                    <span style="transform:${isCollapsed?'rotate(-90deg)':'rotate(0deg)'}; transition:transform 0.2s;">▼</span>
+                 `;
+                 grid.appendChild(header);
+                 
+                 if(!isCollapsed) {
+                     items.forEach(item => {
+                         grid.appendChild(createRow(item));
+                     });
+                 }
+             });
+        } else {
+             // 扁平列表模式
+             displayData.forEach(item => {
+                 if (item.id.includes(q)) {
+                     grid.appendChild(createRow(item));
+                 }
+             });
+        }
+        
         save();
     }
 
-    function toggleSortLink() {
-        sortByUsage = !sortByUsage;
-        document.getElementById('sortBtn').innerText = sortByUsage ? "按消耗量排序" : "按色号排序";
+    function changeSortMode() {
+        currentSortMode = document.getElementById('sortSelect').value;
         render();
     }
 
     function toggleSelect(id) {
         sel.has(id) ? sel.delete(id) : sel.add(id);
+        updateFooter();
+        render();
+    }
+    
+    function cancelSelection() {
+        sel.clear();
+        updateFooter();
+        render();
+    }
+    
+    function updateFooter() {
         document.getElementById('footer').style.display = sel.size > 0 ? 'flex' : 'none';
         document.getElementById('selNum').innerText = sel.size;
-        render();
     }
 
     function updateThreshold() {
@@ -331,21 +566,24 @@
         const item = data.find(d => d.id === id);
         const addVal = 10;
         item.w = parseFloat((item.w + addVal).toFixed(2));
+        // 维护总补货量
+        item.totalAdded = parseFloat(((item.totalAdded || 0) + addVal).toFixed(2));
         
         // 记录补货日志
         const now = new Date();
-        const dateStr = now.getFullYear() + '/' + (now.getMonth()+1) + '/' + now.getDate();
+        const dateStr = formatTime(now);
         if(!item.logs) item.logs = [];
         item.logs.push({ d: dateStr, type: 'add', val: addVal });
         if(item.logs.length > 20) item.logs.shift(); // 增加日志保留条数
         
+        save(); // 增加保存
         render();
     }
 
     function manualEdit(id) {
         currentEditId = id;
         const item = data.find(d => d.id === id);
-        document.getElementById('editWeightTitle').innerText = `正在调整色号 [${id}] 的库存`;
+        document.getElementById('editWeightModalTitle').innerText = `修改库存重量 ${id}`;
         const input = document.getElementById('editWeightInput');
         input.value = item.w;
         showModal('editWeightModal');
@@ -378,10 +616,12 @@
         
         const item = data.find(d => d.id === currentEditId);
         item.w = parseFloat((item.w + val).toFixed(2));
+        // 维护总补货量
+        item.totalAdded = parseFloat(((item.totalAdded || 0) + val).toFixed(2));
         
         // 记录日志
         const now = new Date();
-        const dateStr = (now.getMonth()+1) + '/' + now.getDate();
+        const dateStr = formatTime(now);
         if(!item.logs) item.logs = [];
         item.logs.push({ d: dateStr, type: 'add', val: val });
         if(item.logs.length > 20) item.logs.shift();
@@ -394,51 +634,100 @@
 
     function openHistory(id) {
         const item = data.find(d => d.id === id);
-        document.getElementById('historyTitle').innerText = `色号 [${id}] 的记录`; // 改标题
-        const list = document.getElementById('historyList');
-        list.innerHTML = '';
+        if(!item) return; // 容错处理
+
+        // 1. 设置标题和概览数据
+        document.getElementById('historyTitle').innerHTML = `色号 ${id} 明细`;
+        document.getElementById('hist-stock').innerText = (item.w || 0) + 'g';
+        document.getElementById('hist-used').innerText = (item.totalUsed || 0) + 'g';
+        
+        // 计算总补充：优先使用持久化字段
+        let totalAdded = 0;
+        if (item.totalAdded !== undefined) {
+            totalAdded = item.totalAdded;
+        } else {
+            if(item.logs) {
+                item.logs.forEach(log => {
+                    if(log.type === 'add') {
+                        totalAdded += (log.val || 0);
+                    }
+                });
+            }
+        }
+        document.getElementById('hist-added').innerText = parseFloat(totalAdded.toFixed(2)) + 'g';
+
+        // 2. 渲染记录表格
+        const tbody = document.getElementById('historyList');
+        tbody.innerHTML = '';
         
         if (item.logs && item.logs.length > 0) {
+            // 给日志加上原始索引，方便删除
             const logsWithIdx = item.logs.map((log, idx) => ({...log, idx}));
+            
+            // 倒序显示
             logsWithIdx.reverse().forEach(log => {
-                const row = document.createElement('div');
-                row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #eee; color:#555;';
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #f0f0f0';
                 
-                const info = document.createElement('span');
+                // --- 时间列 ---
+                const tdTime = document.createElement('td');
+                tdTime.style.padding = '10px';
+                tdTime.style.color = '#666';
+                tdTime.innerText = log.d;
+                tr.appendChild(tdTime);
+                
+                // --- 操作类型列 ---
+                const tdType = document.createElement('td');
+                tdType.style.padding = '10px';
+                tdType.style.textAlign = 'center';
+                
+                let typeText = '';
+                let typeColor = '#333';
+                
                 if (log.type === 'add') {
-                    // 补货记录样式
-                    const prefix = log.isManual ? '手动调整(补货)' : '补货';
-                    // 手动调整用黑色(#333)，普通补货用深绿(#2e7d32)
-                    const color = log.isManual ? '#333' : '#2e7d32';
-                    info.innerHTML = `<span style="color:#999; margin-right:8px;">${log.d}</span> <b style="color:${color}">${prefix} +${log.val}g</b>`;
+                    typeText = '补货';
+                    typeColor = '#52c41a'; // 绿色
                 } else {
-                    // 消耗记录样式 (兼容旧数据：没有type字段的视为消耗)
-                    const count = log.c || log.val || 0;
-                    const weight = (count / 100).toFixed(2);
-                    const prefix = log.isManual ? '手动调整(消耗)' : '消耗';
-                    // 手动调整用黑色(#333)，普通消耗用红色(#f5222d)
-                    const color = log.isManual ? '#333' : '#f5222d';
-                    
-                    // 如果是手动调整，优先显示重量，因为粒数是估算的
-                    const desc = log.isManual 
-                        ? `<span style="color:${color}; font-weight:bold;">${prefix} -${weight}g</span> <span style="font-size:11px; color:#999;">(约${count}粒)</span>`
-                        : `<span style="color:${color}; font-weight:bold;">${prefix} ${count} 粒</span> <span style="font-size:11px; color:#999;">(-${weight}g)</span>`;
-                        
-                    info.innerHTML = `<span style="color:#999; margin-right:8px;">${log.d}</span> ${desc}`;
+                    typeText = '消耗';
+                    typeColor = '#ff4d4f'; // 红色
                 }
                 
-                const delBtn = document.createElement('button');
-                delBtn.innerText = '删除';
-                delBtn.style.cssText = 'background:#ff4d4f; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer; margin-left:10px;';
-                delBtn.onclick = () => deleteLog(id, log.idx);
+                tdType.innerHTML = `<span style="background:${typeColor}15; color:${typeColor}; padding:2px 6px; border-radius:4px; font-size:11px;">${typeText}</span>`;
+                tr.appendChild(tdType);
                 
-                row.appendChild(info);
-                row.appendChild(delBtn);
-                list.appendChild(row);
+                // --- 重量/粒数及删除列 ---
+                const tdVal = document.createElement('td');
+                tdVal.style.padding = '10px';
+                tdVal.style.textAlign = 'right';
+                
+                let valHtml = '';
+                if (log.type === 'add') {
+                    valHtml = `<span style="color:#333;">+${log.val}g</span>`;
+                } else {
+                    const count = log.c || log.val || 0;
+                    const weight = (count / 100).toFixed(2);
+                    // 如果是手动调整且没有具体粒数记录（旧数据兼容），优先显示重量
+                    if (log.isManual) {
+                         valHtml = `<span style="color:#333;">-${weight}g</span>`;
+                    } else {
+                         valHtml = `<span style="color:#333;">${count}粒</span><br><span style="font-size:10px; color:#999;">≈ ${weight}g</span>`;
+                    }
+                }
+                
+                // 删除按钮
+                const delBtn = `<button onclick="deleteLog('${id}', ${log.idx})" style="margin-left:8px; border:none; background:none; color:#999; cursor:pointer; font-size:16px; padding:0;">×</button>`;
+                
+                tdVal.innerHTML = `<div style="display:flex; align-items:center; justify-content:flex-end;"><div>${valHtml}</div>${delBtn}</div>`;
+                tr.appendChild(tdVal);
+                
+                tbody.appendChild(tr);
             });
         } else {
-            list.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">暂无记录</div>';
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td colspan="3" style="padding:20px; text-align:center; color:#999;">暂无记录</td>';
+            tbody.appendChild(tr);
         }
+        
         showModal('historyModal');
     }
 
@@ -453,6 +742,8 @@
         if (log.type === 'add') {
             // 回滚补货：减少库存
             item.w = Math.max(0, parseFloat((item.w - log.val).toFixed(2)));
+            // 回滚总补货
+            item.totalAdded = Math.max(0, parseFloat(((item.totalAdded || 0) - log.val).toFixed(2)));
         } else {
             // 回滚消耗：增加库存，减少累计消耗
             const count = log.c || log.val || 0;
@@ -489,12 +780,15 @@
             // 自动记录日志 (忽略极小差异)
             if (Math.abs(diff) > 0.001) {
                 const now = new Date();
-                const dateStr = (now.getMonth()+1) + '/' + now.getDate();
+                const dateStr = formatTime(now);
                 if(!item.logs) item.logs = [];
                 
                 if (diff > 0) {
+                    const addedVal = parseFloat(diff.toFixed(2));
                     // 增加库存 -> 视为补货
-                    item.logs.push({ d: dateStr, type: 'add', val: parseFloat(diff.toFixed(2)), isManual: true });
+                    item.logs.push({ d: dateStr, type: 'add', val: addedVal, isManual: true });
+                    // 维护总补货量
+                    item.totalAdded = parseFloat(((item.totalAdded || 0) + addedVal).toFixed(2));
                 } else {
                     // 减少库存 -> 视为消耗
                     const loss = -diff;
@@ -518,24 +812,72 @@
     function openConsumeModal() {
         const listDiv = document.getElementById('modalList');
         listDiv.innerHTML = '';
+        
+        if (sel.size === 0) {
+            listDiv.innerHTML = '<div style="padding:20px; text-align:center; color:#999; font-size:12px;">未选择任何色号</div>';
+            showModal('consumeModal');
+            return;
+        }
+
         sel.forEach(id => {
             const item = data.find(d => d.id === id);
+            const currentStockGrains = Math.round(item.w * 100); // 当前库存粒数
+            
             const row = document.createElement('div');
             row.className = 'modal-row';
+            // 使用自定义样式覆盖默认 modal-row
+            row.style.cssText = 'display:flex; flex-direction:column; padding: 12px; border-bottom: 1px solid #f0f0f0; background:white; align-items: stretch;';
+            
             row.innerHTML = `
-                <div class="swatch" style="width:20px; height:20px; background:${item.hex}"></div>
-                <b style="margin-left:10px; width:45px;">${id}</b>
-                <input type="number" class="consume-input" data-id="${id}" placeholder="粒数">
+                <div style="display:flex; align-items:center; justify-content: space-between;">
+                    <div style="display:flex; align-items:center; gap: 12px;">
+                        <div class="swatch" style="width:28px; height:28px; background:${item.hex}; border-radius:50%; border:1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></div>
+                        <div style="display:flex; flex-direction:column;">
+                            <b style="font-size:16px; color:#333;">${id}</b>
+                            <span style="font-size:11px; color:#999;">库存: ${currentStockGrains}粒</span>
+                        </div>
+                    </div>
+                    <div style="position:relative;">
+                        <input type="number" class="consume-input" data-id="${id}" data-stock="${currentStockGrains}" placeholder="0" oninput="checkConsumeLimit(this)" 
+                               style="width: 70px; padding: 8px 5px; border: 1px solid #e0e0e0; border-radius: 8px; text-align: center; font-size: 16px; font-weight:bold; color:#333; outline:none; background:#f9fafb; transition: all 0.2s;">
+                    </div>
+                </div>
+                <div class="limit-warn" id="warn-${id}" style="width:100%; color:#ff4d4f; font-size:11px; margin-top:8px; display:none; text-align:right; background:#fff1f0; padding:4px 8px; border-radius:4px;">
+                     ⚠️ 消耗量超过库存 (${currentStockGrains})
+                </div>
             `;
             listDiv.appendChild(row);
         });
+        
+        // 去除最后一行边框
+        if(listDiv.lastChild) listDiv.lastChild.style.borderBottom = 'none';
+        
         showModal('consumeModal');
+        
+        // 自动聚焦第一个输入框
+        setTimeout(() => {
+            const firstInput = listDiv.querySelector('input');
+            if(firstInput) firstInput.focus();
+        }, 100);
+    }
+
+    function checkConsumeLimit(input) {
+        const val = parseFloat(input.value) || 0;
+        const stock = parseFloat(input.getAttribute('data-stock'));
+        const id = input.getAttribute('data-id');
+        const warnEl = document.getElementById(`warn-${id}`);
+        
+        if (val > stock) {
+            warnEl.style.display = 'block';
+        } else {
+            warnEl.style.display = 'none';
+        }
     }
 
     function submitConsume() {
         const inputs = document.querySelectorAll('.consume-input');
         const now = new Date();
-        const dateStr = now.getFullYear() + '/' + (now.getMonth()+1) + '/' + now.getDate();
+        const dateStr = formatTime(now);
         
         inputs.forEach(input => {
             const id = input.getAttribute('data-id');
@@ -663,35 +1005,75 @@
         alert(`已批量更新 ${count} 个色号的库存`);
     }
 
-    function copyLowList() {
-        const list = data.filter(d => d.w < threshold).map(d => `${d.id}(${d.w}g)`).join(', ');
-        navigator.clipboard.writeText(list || '充足').then(() => alert("已复制"));
+    function copyLowStockText() {
+        const el = document.getElementById('lowStockText');
+        el.select();
+        navigator.clipboard.writeText(el.value).then(() => alert("已复制到剪贴板"));
     }
 
-    // --- 水印功能 ---
-    (function initWatermark() {
-        const text = "开发者: 小红书用户āōē，ID 11535779483，使用AI工具开发";
-        const canvas = document.createElement('canvas');
-        canvas.width = 550;
-        canvas.height = 350;
-        const ctx = canvas.getContext('2d');
-        
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(-20 * Math.PI / 180);
-        
-        ctx.font = '10px -apple-system, sans-serif';
-        ctx.fillStyle = 'rgba(150, 150, 150, 0.12)'; // 稍微调高透明度
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, 0, 0);
-        
-        // 将水印添加到 grid 容器中，而不是 body
-        const grid = document.getElementById('grid');
-        grid.style.backgroundImage = `url(${canvas.toDataURL('image/png')})`;
-        grid.style.backgroundRepeat = 'repeat';
-        grid.style.backgroundPosition = '80px 40px';
-        grid.style.backgroundAttachment = 'local'; // 随内容滚动
-    })();
+    function openLowStockModal() {
+        const lowList = data.filter(d => d.w < threshold);
+        const listDiv = document.getElementById('lowStockList');
+        listDiv.innerHTML = '';
+
+        if (lowList.length === 0) {
+            listDiv.innerHTML = `
+                <div style="padding:30px 10px; text-align:center; color:#999;">
+                    <div style="font-size:24px; margin-bottom:10px;">🎉</div>
+                    <div style="font-size:13px;">当前库存充足</div>
+                    <div style="font-size:11px; margin-top:5px;">暂无低于阈值 (${threshold}g) 的色号</div>
+                </div>
+            `;
+            // 清空复制内容
+            document.getElementById('lowStockText').value = '';
+        } else {
+            lowList.forEach(item => {
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; align-items:center; padding:12px; border-bottom:1px solid #f0f0f0; background:white;';
+                
+                row.innerHTML = `
+                    <div class="swatch" style="width:28px; height:28px; background:${item.hex}; border-radius:50%; border:1px solid #eee; margin-right:12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></div>
+                    <div style="flex:1;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <b style="font-size:16px; color:#333;">${item.id}</b>
+                            <span style="font-size:14px; font-weight:bold; color:#ff4d4f;">${item.w}g</span>
+                        </div>
+                        <div style="font-size:11px; color:#999; margin-top:2px;">库存不足 (阈值 ${threshold}g)</div>
+                    </div>
+                `;
+                listDiv.appendChild(row);
+            });
+            
+            // 去除最后一行边框
+            if(listDiv.lastChild) listDiv.lastChild.style.borderBottom = 'none';
+
+            // 准备复制的文本内容
+            const copyText = lowList.map(d => `${d.id}: ${d.w}g`).join('\n');
+            document.getElementById('lowStockText').value = copyText;
+        }
+
+        showModal('lowStockModal');
+    }
+
+    // --- 水印功能 --- 新用户欢迎弹窗 ---
+    function checkWelcome() {
+        const hasVisited = localStorage.getItem('mard_visited');
+        if (!hasVisited) {
+            showModal('welcomeModal');
+        }
+    }
+
+    function closeWelcomeModal() {
+        localStorage.setItem('mard_visited', 'true');
+        closeAllModals();
+    }
+
+    function showDevInfo() {
+        showModal('devInfoModal');
+    }
+
+    // 启动时检查
+    checkWelcome();
 
     render();
 </script>
